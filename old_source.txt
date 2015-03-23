@@ -1,0 +1,157 @@
+//urls
+            URL twitchAPI = new URL("https://api.twitch.tv/kraken/channels/" + savedSettings.get("USER_NAME", "").toLowerCase() + "/follows?limit=20");
+            URL twitchAPIstatus = new URL("https://api.twitch.tv/kraken/channels/" + savedSettings.get("USER_NAME", "").toLowerCase());
+            URL twitchAPIstream = new URL("https://api.twitch.tv/kraken/streams/" + savedSettings.get("USER_NAME", "").toLowerCase());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(twitchAPI.openStream()));
+            BufferedReader reader2 = new BufferedReader(new InputStreamReader(twitchAPIstatus.openStream()));
+            BufferedReader reader3 = new BufferedReader(new InputStreamReader(twitchAPIstream.openStream()));
+            String temp = reader.readLine();
+            String temp2 = reader2.readLine();
+            String temp3 = reader3.readLine();
+            String croppedTemp;
+            //clearsOutput
+            String outText = savedSettings.get("USER_NAME", "") + "@twitch.tv\n";
+            reader.close();
+            reader2.close();
+            reader3.close();
+            //parseing
+            int index = 0;
+            int indexDelta = 0;
+            int indexEnd = 0;
+            //stream
+            index = temp3.indexOf("\"stream\":") + 9;
+            indexEnd = temp3.indexOf('}', index);
+            croppedTemp = temp3.substring(index, indexEnd);
+            if(croppedTemp.equals("null")) {
+                outText = outText + "Status: offline\n\n\n";
+                totalViewers = "offline";
+            } else {
+                outText = outText + "Status: online\n";
+                index = temp3.indexOf("\"viewers\":") + 10;
+                indexEnd = temp3.indexOf(',', index);
+                croppedTemp = temp3.substring(index, indexEnd);
+                outText = outText + "Viewers: " + croppedTemp + "\n\n";
+                totalViewers = croppedTemp;
+            }
+            //subscriptions
+            try {
+                URL url = new URL("https://api.twitch.tv/kraken/channels/" + savedSettings.get("USER_NAME", "").toLowerCase() + "/subscriptions");
+                HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+                httpCon.setRequestProperty("Accept","application/vnd.twitchtv.v3+json");
+                httpCon.setRequestProperty("Authorization","OAuth " + savedSettings.get("AUTH_KEY", ""));
+                System.setProperty("http.agent", "");
+                httpCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                httpCon.setRequestMethod("GET");
+                httpCon.setDoOutput(true);
+                OutputStreamWriter out = new OutputStreamWriter(httpCon.getOutputStream());
+                out.close();
+                if(httpCon.getResponseCode() != 404) {
+                    temp = httpCon.getResponseMessage();
+                    index = temp.indexOf("\"_total\":") + 9;
+                    indexEnd = temp.indexOf('"', index);
+                    croppedTemp = temp.substring(index, indexEnd);
+                    outText = outText + "Total subs: " + croppedTemp + "\n";
+                    outText = outText + "=Recent Subscribers=\n";
+                    //writeSubscribers
+                    outText = outText + "\n";
+                }
+                httpCon.disconnect();
+            } catch (Exception e) {
+                System.out.println("ERROR: cannot grab subscribers:\n" + e);
+            }
+            //total
+            index = temp.indexOf("\"_total\":") + 9;
+            indexEnd = temp.indexOf(',', index);
+            croppedTemp = temp.substring(index, indexEnd);
+            totalFound = croppedTemp;
+            //followers
+            newFollowers = new String[20];
+            for(int x=0; x<20; x++) {
+                newFollowers[x] = "";
+            }
+            //resetIndex
+            index = 0;
+            indexEnd = 0;
+            indexDelta = 0;
+            if(!totalFound.equals("0")) {
+                for(int x = 0; x < 20; x++) {
+                    index = temp.indexOf("display_name", index + indexDelta) + 15;
+                    indexEnd = temp.indexOf('"', index);
+                    indexDelta = indexEnd - index;
+                    croppedTemp = temp.substring(index, indexEnd);
+                    newFollowers[x] = croppedTemp;
+                }
+                //checkIfNewFollower
+                if(!newFollowers[0].equals(savedSettings.get("JUST_FOLLOWED", ""))) {
+                    boolean notNewFollower = false;
+                    for(int x = 0; x < 20; x++) {
+                        if(newFollowers[0].equals(databaseFollowers[x])) {
+                            notNewFollower = true;
+                        }
+                    }
+                    if(!notNewFollower) {
+                        savedSettings.put("JUST_FOLLOWED", newFollowers[0]);
+                        String[] tempFollowers = databaseFollowers;
+                        databaseFollowers = new String[20];
+                        for(int x = 0; x < 19; x++) {
+                            databaseFollowers[x+1] = tempFollowers[x];
+                        }
+                        databaseFollowers[0] = newFollowers[0];
+                        outText = outText + "Total follows: " + totalFound + "\n";
+                        databaseTotal = totalFound;
+                        
+                        //playAnimation
+                        og.followerMessage = savedSettings.get("FOLLOWER_MESSAGE", "N/A").replaceAll("!f", databaseFollowers[0]);
+                        og.setFont(savedSettings.get("FONT_SELECTED", "Arial"));
+                        s.applyAnimations();
+                        og.comingIn = true;
+                        s.myBot.sendMessage("#" + savedSettings.get("USER_NAME", "").toLowerCase(), og.followerMessage);
+                        s.playSound(savedSettings.get("SOUND_SELECTED", "Disabled"));
+                    } else {
+                        outText = outText + "Total follows: " + databaseTotal + "\n";
+                    }
+                } else {
+                    outText = outText + "Total follows: " + databaseTotal + "\n";
+                }
+            } else {
+                outText = outText + "Total follows: " + totalFound + "\n";
+            }
+            //title
+            index = temp2.indexOf("\"status\":") + 10;
+            indexEnd = temp2.indexOf(",\"broad", index);
+            croppedTemp = temp2.substring(index, indexEnd-1).replace("\\", "");
+            if(!titleField.isFocusOwner() && !gameField.isFocusOwner()) {
+                titleField.setText(croppedTemp);
+            }
+            //game
+            index = temp2.indexOf("\"game\":") + 8;
+            indexEnd = temp2.indexOf(",\"dela", index);
+            croppedTemp = temp2.substring(index, indexEnd-1).replace("\\", "");
+            if(!gameField.isFocusOwner() && !titleField.isFocusOwner()) {
+                if(!croppedTemp.equals("ul")) {
+                    gameField.setText(croppedTemp);
+                    gameField.setBackground(Color.white);
+                } else {
+                    gameField.setText("");
+                    gameField.setBackground(Color.white.darker());
+                }
+            }
+            //output
+            outText = outText + "==Recent Followers==";
+            if (Integer.parseInt(totalFound) < savedSettings.getInt("RECENT_NUM", 5)) {
+                for (int x = 0; x < Integer.parseInt(totalFound); x++) {
+                    outText = outText + "\n" + databaseFollowers[x];
+                }
+            } else {
+                for (int x = 0; x < savedSettings.getInt("RECENT_NUM", 5); x++) {
+                    outText = outText + "\n" + databaseFollowers[x];
+                }
+            }
+            outArea.setText(outText);
+            //outputFollowers
+            if(savedSettings.getBoolean("PRINT_FOLLOWERS", true)) {
+                writeFollowers();
+            }
+        } catch(Exception e) {
+            outArea.setText("\n\n          ~ERROR!~\n\n    Invalid username!\n                OR:\n      Cannot connect!");
+        }
