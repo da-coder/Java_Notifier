@@ -26,7 +26,7 @@ import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.PircBot;
 
 public class Settings extends JDialog implements ActionListener, ChangeListener{
-    public String verNum = "Ver. 5.2";
+    public String verNum = "Ver. 5.5";
     
     private JPanel post, switcher, setG, setD, setA, setAn, abt, dbackPrev, dtextPrev, outPrev, colorPnl1, colorPnl2, colorPnl3;
     
@@ -1043,7 +1043,7 @@ public class Settings extends JDialog implements ActionListener, ChangeListener{
         }
         public void startChatting() {
             try {
-                myBot.connect("irc.twitch.tv", 6667, "oauth:ldleze8euwx14s89q6f7d4oi501hact");
+                myBot.connect("irc.twitch.tv", 6667, "oauth:7bz8nhcq30opn8yw6zwyqhoijjmoex");
                 myBot.joinChannel("#" + savedSettings.get("USER_NAME", "").toLowerCase());
                 myBot.sendMessage("#" + savedSettings.get("USER_NAME", "").toLowerCase(), "/me has joined this channel.");
             } catch (ConnectException e) {
@@ -1069,7 +1069,7 @@ public class Settings extends JDialog implements ActionListener, ChangeListener{
         public void flipChat(boolean in) throws Exception {
             if(!in) {
                 postToChat = true;
-                myBot.connect("irc.twitch.tv", 6667, "oauth:ldleze8euwx14s89q6f7d4oi501hact");
+                myBot.connect("irc.twitch.tv", 6667, "oauth:7bz8nhcq30opn8yw6zwyqhoijjmoex");
                 myBot.joinChannel("#" + savedSettings.get("USER_NAME", "").toLowerCase());
                 myBot.sendMessage("#" + savedSettings.get("USER_NAME", "").toLowerCase(), "/me has joined this channel.");
                 postToChatButton.setBackground(Color.white.darker());

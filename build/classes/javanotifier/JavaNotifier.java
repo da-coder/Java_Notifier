@@ -10,8 +10,6 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import org.json.simple.JSONObject;
@@ -41,7 +39,7 @@ public class JavaNotifier implements ComponentListener, ActionListener, MouseLis
     private JButton settingsButton = new JButton("Settings");
     
     public String[][] databaseFollowers;
-    private boolean[] followersNotified;
+    private Long totalFollowers;
     private String databaseTotal, totalViewers;
     private int jsonArraySize;
     public boolean animating = false;
@@ -469,7 +467,7 @@ public class JavaNotifier implements ComponentListener, ActionListener, MouseLis
             JSONObject jsonObjStreams = (JSONObject)objStreams;
             JSONObject jsonObjChannel = (JSONObject)objChannel;
             JSONArray jsonArrayFollows = (JSONArray)jsonObjFollows.get("follows");
-            Long totalFollowers = (Long)jsonObjFollows.get("_total");
+            totalFollowers = (Long)jsonObjFollows.get("_total");
             JSONObject jsonObjStream = (JSONObject)jsonObjStreams.get("stream");
             String status = (String)jsonObjChannel.get("status");
             String game = (String)jsonObjChannel.get("game");
@@ -636,7 +634,7 @@ public class JavaNotifier implements ComponentListener, ActionListener, MouseLis
         writer = null;
         try {
             writer = new PrintWriter(s.decodedPath + "total_followers.txt", "UTF-8");
-            writer.print(jsonArraySize);
+            writer.print(totalFollowers);
         } catch(Exception ex) {
             ex.printStackTrace();
         } finally {
