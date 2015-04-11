@@ -26,7 +26,7 @@ import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.PircBot;
 
 public class Settings extends JDialog implements ActionListener, ChangeListener{
-    public String verNum = "Ver. 5.5";
+    public String verNum = "Ver. 5.6";
     
     private JPanel post, switcher, setG, setD, setA, setAn, abt, dbackPrev, dtextPrev, outPrev, colorPnl1, colorPnl2, colorPnl3;
     

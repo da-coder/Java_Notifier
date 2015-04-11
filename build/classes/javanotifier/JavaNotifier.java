@@ -2,8 +2,11 @@ package javanotifier;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -11,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.prefs.Preferences;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
@@ -102,6 +106,12 @@ public class JavaNotifier implements ComponentListener, ActionListener, MouseLis
     
     private void JavaNotifier() {
         startup.updateSplash("GUI...");
+
+        try {
+            frame.setIconImage(ImageIO.read(new FileInputStream("icon.png")));
+        } catch(Exception e) {
+            System.out.println("failed to set icon image.");
+        }
         
         frame.setLayout(new BorderLayout());
         frame.add(topP, BorderLayout.NORTH);
